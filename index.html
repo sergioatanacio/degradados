@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Degradados Aleatorios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-4">Generador de Degradados Aleatorios</h1>
+        <textarea id="colorInput" rows="5" class="w-full p-2 border rounded mb-4" placeholder="Ingresa colores hexadecimales separados por saltos de línea (ejemplo: #FF5733)"></textarea>
+        <button id="generateGradients" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4">Generar Degradados</button>
+        <div id="gradientsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+    </div>
+    <div id="toast" class="toast"></div>
+
+    <script>
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.opacity = 1;
+            setTimeout(() => {
+                toast.style.opacity = 0;
+            }, 2000);
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`Copiado: ${text}`);
+            }, (err) => {
+                console.error('Error al copiar: ', err);
+            });
+        }
+
+        function isValidHexColor(color) {
+            return /^#[0-9A-F]{6}$/i.test(color);
+        }
+
+        function getRandomColor(colors) {
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function generateGradients() {
+            const input = document.getElementById('colorInput').value;
+            let colors = input.split('\n').map(color => color.trim()).filter(isValidHexColor);
+            
+            if (colors.length < 2) {
+                showToast('Ingresa al menos dos colores válidos');
+                return;
+            }
+
+            const gradientsContainer = document.getElementById('gradientsContainer');
+            gradientsContainer.innerHTML = '';
+
+            const numberOfGradients = 9; // You can adjust this number
+
+            for (let i = 0; i < numberOfGradients; i++) {
+                const color1 = getRandomColor(colors);
+                const color2 = getRandomColor(colors.filter(c => c !== color1));
+
+                const gradientBox = document.createElement('div');
+                gradientBox.className = 'rounded overflow-hidden';
+                
+                const gradient = document.createElement('div');
+                gradient.className = 'h-32 w-full';
+                gradient.style.background = `linear-gradient(to right, ${color1}, ${color2})`;
+                
+                const colorInfo = document.createElement('div');
+                colorInfo.className = 'flex justify-between bg-white p-2';
+                
+                [color1, color2].forEach(color => {
+                    const colorCode = document.createElement('span');
+                    colorCode.className = 'text-sm cursor-pointer hover:bg-gray-100 px-2 py-1 rounded';
+                    colorCode.textContent = color;
+                    colorCode.onclick = () => copyToClipboard(color);
+                    colorInfo.appendChild(colorCode);
+                });
+                
+                gradientBox.appendChild(gradient);
+                gradientBox.appendChild(colorInfo);
+                gradientsContainer.appendChild(gradientBox);
+            }
+        }
+
+        document.getElementById('generateGradients').addEventListener('click', generateGradients);
+    </script>
+</body>
+</html>
